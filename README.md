@@ -6,35 +6,36 @@
 ## Activity Lifecycle
 &nbsp;&nbsp;&nbsp; Androidでは、Activityライフサイクの各段階に、コールバックが用意されているが、Composeアプリでは、そのコールバックに直接紐付けることは推奨されていない（参照：[「ライフサイクルを Compose と統合する」](https://developer.android.com/topic/libraries/architecture/lifecycle))。そのため、以下のコールバックは直接使うというより、ライフサイクルの概念を理解するために、記す。  
 
-### Activity Lifecycle　の図
-// ここにhttps://developer.android.com/codelabs/basic-android-kotlin-compose-activity-lifecycle?continue=https%3A%2F%2Fdeveloper.android.com%2Fcourses%2Fpathways%2Fandroid-basics-compose-unit-4-pathway-1%23codelab-https%3A%2F%2Fdeveloper.android.com%2Fcodelabs%2Fbasic-android-kotlin-compose-activity-lifecycle#2の図をコピーする
+### Activity Lifecycleの図
+<img width="205" height="225" alt="スクリーンショット 2026-05-24 23 01 18" src="https://github.com/user-attachments/assets/5497fe90-deaf-4cac-ac18-57f2b6e83a0f" /><br>
+引用元：https://developer.android.com/codelabs/basic-android-kotlin-compose-activity-lifecycle#2
 
 ### onCreate()
-&nbsp;&nbsp;&nbsp; このコールバックは、アクティビティを最初に作成した時に呼び出される。ここでは、アクティビティのライフサイクル全体を通して一度だけ実行される必要があるコードを実行する。ここの実行が完了すると、次にonStart()とonResume()が連続して呼び出される。
+&nbsp;&nbsp;&nbsp; このコールバックは、アクティビティを最初に作成した時に呼び出される。ここでは、アクティビティのライフサイクル全体を通して一度だけ実行される必要があるコードを実行する。ここの実行が完了すると、次に``onStart()``と``onResume()``が連続して呼び出される。
 
 ### onStart()
-&nbsp;&nbsp;&nbsp; このコールバックにより、アクティビはユーザーに表示される。しかし、画面に表示されるだけで、インタラクティブではない。onCreateと同様に、このコールバックはすぐに完了し、次のonResumeが呼び出される。
+&nbsp;&nbsp;&nbsp; このコールバックにより、アクティビティはユーザーに表示される。しかし、画面に表示されるだけで、インタラクティブではない。``onCreate()``と同様に、このコールバックはすぐに完了し、次の``onResume()``が呼び出される。
 
 ### onRestart()
-&nbsp;&nbsp;&nbsp; onStop()コールバックが呼び出された後に、アクティビティを再起動する場合に呼び出される。
+&nbsp;&nbsp;&nbsp; ``onStop()``コールバックが呼び出された後に、アクティビティを再起動する場合に呼び出される。
 
 ### onResume()
-&nbsp;&nbsp;&nbsp; このコールバックが呼び出される状態は、アクティビティがフォアグラウンドに表示され、インタラクティブになる。アプリからフォーカスが外れるまで、この状態を維持する。割り込みイベントが発生すると、onPauseコールバックが呼び出される。<br>　例えば、マルチウィンドウというスマホの画面上に2つのアプリを表示する際に、操作していないアプリはstartの状態になる。そのため、マルチウィンドウで操作していない状況でも、カメラをアクティブな状態にしたい場合は、onStart()でカメラを初期化する必要がある。しかし、その場合、もう一つのアプリでカメラを起動させようとすると、二つのアプリがカメラを起動しようとしてしまい、クラッシュする。この問題を踏まえ、Android9の一部以降は、複数のアクティビティが、マルティウィンドウの際には、resume状態を維持できるようになった（参考：[Activity lifecycle in multi-window mode](https://developer.android.com/develop/ui/compose/layouts/adaptive/support-multi-window-mode#lifecycle)）。
+&nbsp;&nbsp;&nbsp; このコールバックが呼び出される状態は、アクティビティがフォアグラウンドに表示され、インタラクティブになる。アプリからフォーカスが外れるまで、この状態を維持する。割り込みイベントが発生すると、``onPause()``コールバックが呼び出される。<br>　例えば、マルチウィンドウというスマホの画面上に2つのアプリを表示する際に、操作していないアプリはstartの状態になる。そのため、マルチウィンドウで操作していない状況でも、カメラをアクティブな状態にしたい場合は、``onStart()``でカメラを初期化する必要がある。しかし、その場合、もう一つのアプリでカメラを起動させようとすると、二つのアプリがカメラを起動しようとしてしまい、クラッシュする。この問題を踏まえ、Android9の一部以降は、複数のアクティビティが、マルティウィンドウの際には、resume状態を維持できるようになった（参考：[Activity lifecycle in multi-window mode](https://developer.android.com/develop/ui/compose/layouts/adaptive/support-multi-window-mode#lifecycle)）。
 
 ### onPause()
-&nbsp;&nbsp;&nbsp; このコールバックが呼び出される理由として、アプリの実行を中断するイベントが発生したこと、マルティウィンドウでフォーカスが外れたこと、ダイアログなど半透明のアクティビティが開かれたことが挙げられる。この段階であれば、アプリはフォアグラウンド上にはいないため、位置情報取得の停止やリソースの解放ができる。ただし、onPause()の実行時間は非常に短いため、データの保存やネットワークの呼び出しには使用できない。<br>　onPauseが重要なのは、アプリがフリーズしたように見えないように、UIを更新しておく必要があるからである。しかし、コードの実行が長いと、他の表示を妨げる可能性がある。例えば、電話がかかってきたときに、着信通知が遅れる可能性がある。アクティビティが完全に非表示になると、onStopが呼び出される。
+&nbsp;&nbsp;&nbsp; このコールバックが呼び出される理由として、アプリの実行を中断するイベントが発生したこと、マルティウィンドウでフォーカスが外れたこと、ダイアログなど半透明のアクティビティが開かれたことが挙げられる。この段階であれば、アプリはフォアグラウンド上にはいないため、位置情報取得の停止やリソースの解放ができる。ただし、``onPause()``の実行時間は非常に短いため、データの保存やネットワークの呼び出しには使用できない。<br>　``onPause()``が重要なのは、アプリがフリーズしたように見えないように、UIを更新しておく必要があるからである。しかし、コードの実行が長いと、他の表示を妨げる可能性がある。例えば、電話がかかってきたときに、着信通知が遅れる可能性がある。アクティビティが完全に非表示になると、``onStop()``が呼び出される。
 
 ### onStop()
-&nbsp;&nbsp;&nbsp; アクティビティがユーザーから見えなくなると、このコールバックが呼び出される。このstop状態では、CPU負荷の高い操作、例えばデータ保存もできる。さらに、状態やメンバ情報は保持される。Activityの実行が終了するとonDestroyが呼び出される。
+&nbsp;&nbsp;&nbsp; アクティビティがユーザーから見えなくなると、このコールバックが呼び出される。このstop状態では、CPU負荷の高い操作、例えばデータ保存もできる。さらに、状態やメンバ情報は保持される。Activityの実行が終了すると``onDestroy()``が呼び出される。
 
 ### onDestroy()
-&nbsp;&nbsp;&nbsp; アクティビティが破棄される前、つまりユーザーがアプリを完全に終了した時に、このコールバックは呼び出される。さらに、デバイスの回転やマルチウィンドウへの移行など、構成変更の際にも呼び出されるが、ViewModelは保持され、次のアクティビティインスタンスに渡されるため、何もする必要がない。onDestory()では、先ほどのonStop()までのコールバックで解放されなかったリソースを全て解放する。
+&nbsp;&nbsp;&nbsp; アクティビティが破棄される前、つまりユーザーがアプリを完全に終了した時に、このコールバックは呼び出される。さらに、デバイスの回転やマルチウィンドウへの移行など、構成変更の際にも呼び出されるが、ViewModelは保持され、次のアクティビティインスタンスに渡されるため、何もする必要がない。``onDestory()``では、先ほどの``onStop()``までのコールバックで解放されなかったリソースを全て解放する。
 
 ## When Activity Lifecycle
 - デバイスの戻るボタンを使用したとき
-    - アクティビティが削除されるため、onDestroy()が呼び出される。
+    - アクティビティが削除されるため、``onDestroy()``が呼び出される。
 - デバイスのホームボタンを使用したとき、アプリを切り替えたとき、電話が来たとき
-    - アクティビティは破棄されず、onPause()、onStop()が呼び出され、戻ったら、onRestart()、onStart()、onResume()が呼び出される。
+    - アクティビティは破棄されず、``onPause()``、``onStop()``の順で呼び出され、アプリに戻ったら、``onRestart()``、``onStart()``、``onResume()``の順で呼び出される。
 
 ## Best Practice for Activity Lifecycle
 ### rememberとrememberSaveableの違い
@@ -106,4 +107,3 @@ fun Example(cameraController: CameraController) {
 ## Reference
 - https://developer.android.com/codelabs/basic-android-kotlin-compose-activity-lifecycle#0
 - https://developer.android.com/guide/components/activities/activity-lifecycle#activity-lifecycle-concepts
-- 
